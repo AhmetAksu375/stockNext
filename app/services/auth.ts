@@ -9,6 +9,8 @@ export const login = async (userName: string, password: string) => {
       password,
     });
 
+    localStorage.setItem("token", response.data.token);
+
     // Yanıt başarılı olduğunda dönen veriler
     return response.data;
   } catch (error: any) {

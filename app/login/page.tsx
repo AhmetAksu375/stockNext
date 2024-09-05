@@ -1,9 +1,10 @@
-"use client";
+"use client"; // Bu satır bileşeni istemci bileşeni olarak işaretler
 
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 
 import { login } from "../services/auth";
 
@@ -15,6 +16,7 @@ export default function Page() {
   const [password, setPassword] = useState(""); // Şifre
   const [isVisible, setIsVisible] = useState(false);
   const [error, setError] = useState<string | null>(null); // Hata durumu
+  const router = useRouter(); // useRouter sadece client component'lerde çalışır
 
   const toggleVisibility = () => setIsVisible(!isVisible);
 
@@ -23,15 +25,32 @@ export default function Page() {
       const response = await login(userName, password); // Login fonksiyonu çağrılıyor
 
       console.log("Login successful:", response);
-      // Giriş başarılıysa, kullanıcıyı yönlendirebilirsiniz
+
+      // Başarılı giriş sonrası token'ı localStorage'a kaydedin
+      localStorage.setItem("token", response.token); // Burada response'dan gelen token'ı kaydediyoruz
+
+      // Giriş başarılıysa, ana sayfaya yönlendir
+      router.push("/");
     } catch (error) {
       console.error("Login failed:", error);
       setError("Login failed. Please check your credentials.");
     }
   };
 
+  useLayoutEffect(() => {
+    {
+      // Tarayıcı ortamında çalıştığımızdan emin olun
+      const token = localStorage.getItem("token");
+
+      // Eğer token varsa, kullanıcıyı ana sayfaya yönlendir
+      if (token) {
+        router.push("/");
+      }
+    }
+  }, [router]); // router bağımlılığı
+
   return (
-    <div className="flex justify-center py-24 w-screen border-2 h-screen">
+    <div className="flex justify-center py-24 w-screen h-screen">
       <div className="flex flex-col gap-4 w-[500]">
         <Input
           label="Username"
